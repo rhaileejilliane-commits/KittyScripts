@@ -1,0 +1,1364 @@
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+
+WindUI:AddTheme({
+    Name = "PinkFade",
+    Accent = Color3.fromHex("#FF69B4"),
+    Dialog = Color3.fromHex("#1A0F14"),
+    Outline = Color3.fromHex("#FF1493"),
+    Text = Color3.fromHex("#FFF0F5"),
+    Placeholder = Color3.fromHex("#D87093"),
+    Background = Color3.fromHex("#0F070A"),
+    Button = Color3.fromHex("#2D1420"),
+    Icon = Color3.fromHex("#FF69B4"),
+})
+
+local Window = WindUI:CreateWindow({
+    Title = "Kitty Hub",
+    Icon = "bomb",
+    Author = "By Kitty Scripts Team",
+    Folder = "WindUI_KittyHub",
+    Size = UDim2.fromOffset(560, 400),
+    Transparent = false,
+    Theme = "PinkFade",
+    SideBarWidth = 140,
+    HasOutline = true
+})
+
+task.spawn(function()
+    task.wait(0.1)
+    for _, obj in ipairs(game:GetService("CoreGui"):GetDescendants()) do
+        if obj:IsA("UIStroke") then
+            local gradient = obj:FindFirstChildOfClass("UIGradient")
+            if not gradient then
+                gradient = Instance.new("UIGradient")
+                gradient.Parent = obj
+            end
+            gradient.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Color3.fromHex("#FF69B4")),
+                ColorSequenceKeypoint.new(0.5, Color3.fromHex("#FF1493")),
+                ColorSequenceKeypoint.new(1, Color3.fromHex("#DA70D6"))
+            })
+        end
+    end
+end)
+
+task.spawn(function()
+    local windowMainFrame = nil
+    while not windowMainFrame do
+        task.wait(0.1)
+        for _, gui in ipairs(game:GetService("CoreGui"):GetDescendants()) do
+            if gui:IsA("Frame") and gui.Size.X.Offset == 560 and gui.Size.Y.Offset == 400 then
+                for _, child in ipairs(gui:GetDescendants()) do
+                    if child:IsA("Frame") and (child.Name == "Background" or child.Name == "Container" or (child.BackgroundColor3.R > 0.03 and child.BackgroundColor3.R < 0.08)) then
+                        windowMainFrame = child
+                        break
+                    end
+                end
+                if not windowMainFrame then
+                    windowMainFrame = gui
+                end
+                break
+            end
+        end
+    end
+
+    if windowMainFrame then
+        local bgText = Instance.new("TextLabel")
+        bgText.Name = "KscriptsWatermark"
+        bgText.Size = UDim2.new(1, 0, 1, 0)
+        bgText.Position = UDim2.new(0, 0, 0, 0)
+        bgText.BackgroundTransparency = 1
+        bgText.Font = Enum.Font.GothamBold
+        bgText.Text = "Kscripts"
+        bgText.TextColor3 = Color3.fromHex("#FF69B4")
+        bgText.TextTransparency = 0.85
+        bgText.TextSize = 64
+        bgText.ZIndex = 1
+        bgText.Parent = windowMainFrame
+
+        local activeParticles = {}
+        for i = 1, 15 do
+            local dot = Instance.new("Frame")
+            dot.Name = "Particle_" .. i
+            dot.Size = UDim2.fromOffset(math.random(3, 5), math.random(3, 5))
+            dot.Position = UDim2.new(math.random(), 0, math.random(), 0)
+            dot.BackgroundColor3 = Color3.fromHex(math.random() > 0.5 and "#FF69B4" or "#DA70D6")
+            dot.BackgroundTransparency = 0.4
+            dot.BorderSizePixel = 0
+            dot.ZIndex = 2
+            
+            local corner = Instance.new("UICorner")
+            corner.CornerRadius = UDim.new(1, 0)
+            corner.Parent = dot
+            
+            dot.Parent = windowMainFrame
+            table.insert(activeParticles, {
+                Frame = dot,
+                SpeedX = (math.random() - 0.5) * 0.0005,
+                SpeedY = -math.random(2, 6) * 0.0001,
+                Pulse = math.random() * 6.28
+            })
+        end
+
+        game:GetService("RunService").RenderStepped:Connect(function()
+            local t = tick()
+            bgText.TextTransparency = 0.80 + 0.15 * math.sin(t * 2)
+
+            for _, data in ipairs(activeParticles) do
+                local pos = data.Frame.Position
+                local newX = (pos.X.Scale + data.SpeedX) % 1
+                local newY = pos.Y.Scale + data.SpeedY
+                if newY < -0.05 then
+                    newY = 1.05
+                    newX = math.random()
+                end
+                data.Frame.Position = UDim2.new(newX, 0, newY, 0)
+                data.Frame.BackgroundTransparency = 0.35 + 0.3 * math.sin(t * 2.5 + data.Pulse)
+            end
+        end)
+    end
+end)
+
+local InfoTab = Window:Tab({ Title = "Info", Icon = "info" })
+local CombatTab = Window:Tab({ Title = "Combat", Icon = "sword" })
+local MovementTab = Window:Tab({ Title = "Movement", Icon = "activity" })
+local VisualTab = Window:Tab({ Title = "Visual", Icon = "eye" })
+local MiscTab = Window:Tab({ Title = "Miscellaneous", Icon = "layout-grid" })
+
+-- INFO TAB
+InfoTab:Section({ Title = "[Update Info 1.0 Released]" })
+InfoTab:Paragraph({
+    Title = "Kitty Hub 1.0 Full Release Notes",
+    Desc = "Welcome to Kitty Hub version 1.0! This release brings a massive overhaul to optimization, stabilization, and visual features. Here is a comprehensive overview of all added and improved features:\n\n• **Combat & Hitboxes**: Fully optimized hitbox expander with customizable sizes, custom ESP colors, and a reliable auto give-bomb utility designed for competitive duels.\n• **Advanced Movement**: Integrated safe velocity-clamped Infinite Jump, customizable [Speed Bypass] speed multiplier bypasses, and an automated Movement Recorder UI panel with smooth playback.\n• **Visuals & Stable ESP**: Completely overhauled the visual rendering pipeline. Player ESP, Box ESP, Tracers, and Names are now implemented cleanly using high-performance drawing lines and persistent highlights without any flickering or stuttering. Includes customizable themes and X-Ray capabilities.\n• **Miscellaneous & Character Customization**: Client-sided Headless, Korblox leg replacement, customizable player trails with a live rainbow mode, and instant server utility tools (Rejoin & Server Hop)."
+})
+
+InfoTab:Section({ Title = "Script Credits & Support" })
+InfoTab:Paragraph({
+    Title = "Kitty Scripts Team",
+    Desc = "This script is fully supported and maintained by the Kitty Scripts Team."
+})
+
+-- SERVICES & UTILS
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local Camera = Workspace.CurrentCamera
+
+local colorOptionsMap = {
+    ["PinkFade"] = Color3.fromRGB(255, 105, 180),
+    ["Hot Pink"] = Color3.fromRGB(255, 20, 147),
+    ["Orchid"] = Color3.fromRGB(218, 112, 214),
+    ["Red"] = Color3.fromRGB(255, 0, 0),
+    ["Blue"] = Color3.fromRGB(0, 0, 255),
+    ["White"] = Color3.fromRGB(255, 255, 255),
+    ["Green"] = Color3.fromRGB(0, 255, 0)
+}
+
+local function isTeammateCheck(player)
+    if player == LocalPlayer then return true end
+    if player.Team and LocalPlayer.Team and player.Team == LocalPlayer.Team then
+        return true
+    end
+    local pChar = player.Character
+    if pChar then
+        for _, child in ipairs(pChar:GetChildren()) do
+            if (child:IsA("Highlight") and child.Enabled) or child:IsA("Team") or child.Name:lower():find("team") then
+                return true
+            end
+        end
+    end
+    if player:GetAttribute("Team") and LocalPlayer:GetAttribute("Team") then
+        if player:GetAttribute("Team") == LocalPlayer:GetAttribute("Team") then
+            return true
+        end
+    end
+    return false
+end
+
+-- COMBAT TAB
+CombatTab:Section({ Title = "Hitbox Expander" })
+
+local HitboxEnabled = false
+local HitboxSizeValue = 5
+local HitboxColor = Color3.fromRGB(255, 105, 180)
+local originalHitboxPartData = {}
+local floorCylinderVisual = nil
+
+local function applyHitboxExpansion(p, currentSize)
+    local char = p.Character
+    if not char then return end
+    
+    local partsToExpand = {"Head", "Torso", "HumanoidRootPart", "UpperTorso", "LowerTorso"}
+    for _, partName in ipairs(partsToExpand) do
+        local part = char:FindFirstChild(partName)
+        if part and part:IsA("BasePart") then
+            if not originalHitboxPartData[part] then
+                originalHitboxPartData[part] = {
+                    Size = part.Size,
+                    Transparency = part.Transparency,
+                    CanCollide = part.CanCollide
+                }
+            end
+            
+            if p ~= LocalPlayer and not isTeammateCheck(p) then
+                part.Size = Vector3.new(currentSize, currentSize, currentSize)
+                part.Transparency = 1
+                part.CanCollide = false
+                pcall(function()
+                    part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
+                end)
+            end
+        end
+    end
+end
+
+local function resetHitboxExpansion(p)
+    local char = p.Character
+    if not char then return end
+    for _, part in ipairs(char:GetChildren()) do
+        if part:IsA("BasePart") and originalHitboxPartData[part] then
+            part.Size = originalHitboxPartData[part].Size
+            part.Transparency = originalHitboxPartData[part].Transparency
+            part.CanCollide = originalHitboxPartData[part].CanCollide
+            originalHitboxPartData[part] = nil
+        end
+    end
+end
+
+CombatTab:Slider({
+    Title = "Hitbox Max Radius",
+    Desc = "Adjust max cycle size from 1 to 15",
+    Step = 1,
+    Value = {
+        Min = 1,
+        Max = 15,
+        Default = 5,
+    },
+    Callback = function(Value)
+        HitboxSizeValue = Value
+    end
+})
+
+CombatTab:Dropdown({
+    Title = "Hitbox ESP Color",
+    Values = {"PinkFade", "Hot Pink", "Orchid", "Red", "Blue", "White"},
+    Default = "PinkFade",
+    Callback = function(Value)
+        if colorOptionsMap[Value] then
+            HitboxColor = colorOptionsMap[Value]
+            if floorCylinderVisual then
+                floorCylinderVisual.Color = HitboxColor
+            end
+        end
+    end
+})
+
+CombatTab:Toggle({
+    Title = "Enable Hitbox Expander",
+    Desc = "Cycles size smoothly from 1 to your max input value in a loop",
+    Default = false,
+    Callback = function(State)
+        HitboxEnabled = State
+        if HitboxEnabled then
+            if not floorCylinderVisual then
+                floorCylinderVisual = Instance.new("Part")
+                floorCylinderVisual.Name = "HitboxFloorCylinder"
+                floorCylinderVisual.Shape = Enum.PartType.Cylinder
+                floorCylinderVisual.Size = Vector3.new(0.2, 6, 6)
+                floorCylinderVisual.Color = HitboxColor
+                floorCylinderVisual.Material = Enum.Material.Neon
+                floorCylinderVisual.Transparency = 0.5
+                floorCylinderVisual.Anchored = true
+                floorCylinderVisual.CanCollide = false
+                floorCylinderVisual.Parent = Workspace
+            end
+        else
+            if floorCylinderVisual then
+                floorCylinderVisual:Destroy()
+                floorCylinderVisual = nil
+            end
+            for _, p in ipairs(Players:GetPlayers()) do
+                resetHitboxExpansion(p)
+            end
+        end
+    end
+})
+
+RunService.RenderStepped:Connect(function()
+    local localChar = LocalPlayer.Character
+
+    if HitboxEnabled then
+        local cycleSpeed = 3
+        local alpha = (math.sin(tick() * cycleSpeed) + 1) / 2
+        local currentCyclingSize = 1 + (HitboxSizeValue - 1) * alpha
+
+        if localChar and localChar:FindFirstChild("HumanoidRootPart") and floorCylinderVisual then
+            local hrp = localChar.HumanoidRootPart
+            local currentIndicatorSize = math.max(currentCyclingSize, 2) * 1.2
+            floorCylinderVisual.Size = Vector3.new(0.2, currentIndicatorSize, currentIndicatorSize)
+            floorCylinderVisual.CFrame = hrp.CFrame * CFrame.new(0, -3, 0) * CFrame.Angles(0, 0, math.rad(90))
+        end
+
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character then
+                applyHitboxExpansion(p, currentCyclingSize)
+            end
+        end
+    end
+end)
+
+CombatTab:Section({ Title = "Timebomb Duels Helper" })
+
+local autoGiveBombEnabled = false
+
+CombatTab:Toggle({
+    Title = "Auto GiveBomb",
+    Desc = "Teleports to nearby enemy inside the arena when holding a bomb tool",
+    Default = false,
+    Callback = function(State)
+        autoGiveBombEnabled = State
+    end
+})
+
+task.spawn(function()
+    RunService.RenderStepped:Connect(function()
+        if not autoGiveBombEnabled then return end
+        local char = LocalPlayer.Character
+        if not char then return end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        local hasBombTool = false
+        for _, child in ipairs(char:GetChildren()) do
+            if child:IsA("Tool") then
+                local nameLower = child.Name:lower()
+                if nameLower:find("bomb") or nameLower:find("time") or nameLower:find("gift") then
+                    hasBombTool = true
+                    break
+                end
+            end
+        end
+
+        if hasBombTool then
+            local nearestTarget = nil
+            local shortestDistance = 35
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and not isTeammateCheck(player) and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local targetHRP = player.Character.HumanoidRootPart
+                    local dist = (hrp.Position - targetHRP.Position).Magnitude
+                    if dist < shortestDistance then
+                        shortestDistance = dist
+                        nearestTarget = targetHRP
+                    end
+                end
+            end
+
+            if nearestTarget then
+                hrp.CFrame = nearestTarget.CFrame * CFrame.new(0, 0, 2)
+            end
+        end
+    end)
+end)
+
+-- MOVEMENT TAB
+MovementTab:Section({ Title = "Infinite Jump" })
+
+local InfJumpEnabled = false
+local InfJumpMode = "Original"
+local InfJumpConnection
+local lastJumpTime = 0
+local jumpCooldown = 0.2
+
+MovementTab:Dropdown({
+    Title = "Infinite Jump Mode",
+    Values = {"Original", "Toggle Supported"},
+    Default = "Original",
+    Callback = function(Value)
+        InfJumpMode = Value
+    end
+})
+
+MovementTab:Toggle({
+    Title = "Infinite Jump",
+    Desc = "Anti-cheat velocity clamp integrated",
+    Default = false,
+    Callback = function(Value)
+        InfJumpEnabled = Value
+        if InfJumpEnabled then
+            if InfJumpConnection then InfJumpConnection:Disconnect() end
+            InfJumpConnection = UserInputService.JumpRequest:Connect(function()
+                if not InfJumpEnabled then return end
+                local char = LocalPlayer.Character
+                if not char then return end
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                local rootPart = char:FindFirstChild("HumanoidRootPart")
+                if not humanoid or not rootPart then return end
+
+                if InfJumpMode == "Original" then
+                    local currentTime = os.clock()
+                    if currentTime - lastJumpTime < jumpCooldown then return end
+                    lastJumpTime = currentTime
+                    rootPart.AssemblyLinearVelocity = Vector3.new(rootPart.AssemblyLinearVelocity.X, math.clamp(humanoid.JumpPower, 30, 50), rootPart.AssemblyLinearVelocity.Z)
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                elseif InfJumpMode == "Toggle Supported" then
+                    if UserInputService:IsKeyDown(Enum.KeyCode.Space) or UserInputService:GetFocusedTextBox() == nil then
+                        rootPart.AssemblyLinearVelocity = Vector3.new(rootPart.AssemblyLinearVelocity.X, math.clamp(humanoid.JumpPower, 30, 50), rootPart.AssemblyLinearVelocity.Z)
+                        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                end
+            end)
+        else
+            if InfJumpConnection then
+                InfJumpConnection:Disconnect()
+                InfJumpConnection = nil
+            end
+        end
+    end
+})
+
+MovementTab:Section({ Title = "Speed boost Bypass ANTI-Cheat Protected" })
+
+local tpWalkEnabled = false
+local tpWalkSpeedMultiplier = 1.0
+
+MovementTab:Slider({
+    Title = "[Speed Bypass] Speed Multiplier",
+    Desc = "Adjust speed from slow (0.10) to fast (5.0)",
+    Step = 0.05,
+    Value = {
+        Min = 0.10,
+        Max = 5.0,
+        Default = 1.0,
+    },
+    Callback = function(Value)
+        tpWalkSpeedMultiplier = Value
+    end
+})
+
+MovementTab:Toggle({
+    Title = "Enable [Speed Bypass]",
+    Default = false,
+    Callback = function(State)
+        tpWalkEnabled = State
+        if not tpWalkEnabled then
+            local char = LocalPlayer.Character
+            if char then
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                if humanoid then humanoid.WalkSpeed = 16 end
+                if hrp then
+                    local currentVel = hrp.AssemblyLinearVelocity
+                    hrp.AssemblyLinearVelocity = Vector3.new(0, currentVel.Y, 0)
+                end
+            end
+        end
+        WindUI:Notify({ Title = "[Speed Bypass]", Content = tpWalkEnabled and "[Speed Bypass] Enabled" or "[Speed Bypass] Disabled", Duration = 2 })
+    end
+})
+
+RunService.RenderStepped:Connect(function()
+    if not tpWalkEnabled then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not hrp then return end
+
+    if humanoid.FloorMaterial == Enum.Material.Air then return end
+
+    local moveDir = humanoid.MoveDirection
+    if moveDir.Magnitude > 0 then
+        local currentVel = hrp.AssemblyLinearVelocity
+        local baseSpeed = humanoid.WalkSpeed
+        local safeMultiplier = math.clamp(tpWalkSpeedMultiplier, 0.10, 5.0)
+        local targetSpeed = baseSpeed * safeMultiplier
+        
+        local desiredVel = Vector3.new(moveDir.X * targetSpeed, currentVel.Y, moveDir.Z * targetSpeed)
+        hrp.AssemblyLinearVelocity = currentVel:Lerp(desiredVel, 0.5)
+    end
+end)
+
+MovementTab:Section({ Title = "Targeting & Navigation" })
+
+local autoFollowEnabled = false
+
+MovementTab:Toggle({
+    Title = "Auto Follow (Bomb needed)",
+    Desc = "Safe velocity clamping applied with pathfinding wall navigation.",
+    Default = false,
+    Callback = function(State)
+        autoFollowEnabled = State
+    end
+})
+
+task.spawn(function()
+    local character, humanoidRootPart, humanoid
+    
+    local function setupCharacter(char)
+        character = char
+        humanoidRootPart = char:WaitForChild("HumanoidRootPart", 5)
+        humanoid = char:WaitForChild("Humanoid", 5)
+    end
+
+    LocalPlayer.CharacterAdded:Connect(setupCharacter)
+    if LocalPlayer.Character then
+        setupCharacter(LocalPlayer.Character)
+    end
+
+    local randomOffset = Vector3.new(0, 0, 0)
+    local lastOffsetUpdate = 0
+    local PathfindingService = game:GetService("PathfindingService")
+    local path = PathfindingService:CreatePath({
+        AgentRadius = 2,
+        AgentHeight = 5,
+        AgentCanJump = true,
+        WaypointSpacing = 4,
+        Costs = { Water = math.huge }
+    })
+
+    local currentWaypoints = {}
+    local currentWaypointIndex = 1
+    local lastPathComputeTime = 0
+
+    RunService.RenderStepped:Connect(function()
+        if not autoFollowEnabled or not humanoidRootPart or not humanoid or not character then return end
+        
+        pcall(function()
+            if humanoidRootPart.AssemblyLinearVelocity.Magnitude > 60 then
+                humanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, humanoidRootPart.AssemblyLinearVelocity.Y, 0)
+            end
+        end)
+
+        local hasToolEquipped = false
+        for _, child in ipairs(character:GetChildren()) do
+            if child:IsA("Tool") then
+                hasToolEquipped = true
+                break
+            end
+        end
+
+        if hasToolEquipped then
+            local isMovingJoystick = humanoid.MoveDirection.Magnitude > 0.1
+
+            if not isMovingJoystick then
+                local nearestTarget = nil
+                local shortestDistance = math.huge
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer and not isTeammateCheck(player) and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        local targetHRP = player.Character.HumanoidRootPart
+                        local dist = (humanoidRootPart.Position - targetHRP.Position).Magnitude
+                        if dist < shortestDistance then
+                            shortestDistance = dist
+                            nearestTarget = targetHRP
+                        end
+                    end
+                end
+
+                if nearestTarget then
+                    if tick() - lastOffsetUpdate > 1.5 then
+                        randomOffset = Vector3.new(math.random(-2, 2), 0, math.random(-2, 2))
+                        lastOffsetUpdate = tick()
+                    end
+                    
+                    local targetPos = nearestTarget.Position + randomOffset
+                    local currentTime = tick()
+                    
+                    local raycastParams = RaycastParams.new()
+                    raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+                    raycastParams.FilterDescendantsInstances = {character, nearestTarget.Parent}
+                    local raycastResult = Workspace:Raycast(humanoidRootPart.Position, targetPos - humanoidRootPart.Position, raycastParams)
+                    
+                    if not raycastResult then
+                        humanoid:MoveTo(targetPos)
+                        currentWaypoints = {}
+                    else
+                        if currentTime - lastPathComputeTime > 0.5 then
+                            lastPathComputeTime = currentTime
+                            pcall(function()
+                                path:ComputeAsync(humanoidRootPart.Position, targetPos)
+                                if path.Status == Enum.PathStatus.Success then
+                                    currentWaypoints = path:GetWaypoints()
+                                    currentWaypointIndex = 2 
+                                else
+                                    currentWaypoints = {}
+                                    humanoid:MoveTo(targetPos)
+                                end
+                            end)
+                        end
+                        
+                        if #currentWaypoints > 0 and currentWaypointIndex <= #currentWaypoints then
+                            local waypoint = currentWaypoints[currentWaypointIndex]
+                            humanoid:MoveTo(waypoint.Position)
+                            
+                            if waypoint.Action == Enum.PathWaypointAction.Jump then
+                                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                            end
+                            
+                            if (humanoidRootPart.Position - waypoint.Position).Magnitude < 4 then
+                                currentWaypointIndex = currentWaypointIndex + 1
+                            end
+                        else
+                            humanoid:MoveTo(targetPos)
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end)
+
+MovementTab:Section({ Title = "Auto Record Movement" })
+
+local recordedFrames = {}
+local isRecording = false
+local isPlaying = false
+local recordConnection = nil
+local playbackConnection = nil
+local recorderUIInstance = nil
+
+local function updateRecorderUIState(stateText, stateColor)
+    if recorderUIInstance then
+        local statusLabel = recorderUIInstance:FindFirstChild("StatusLabel", true)
+        if statusLabel then
+            statusLabel.Text = "Status: " .. stateText
+            statusLabel.TextColor3 = stateColor
+        end
+    end
+end
+
+MovementTab:Toggle({
+    Title = "Auto Record UI Panel",
+    Desc = "Spawns a smooth rounded box UI with pink glowing outlines, animations, and background particles.",
+    Default = false,
+    Callback = function(State)
+        if State then
+            if not recorderUIInstance then
+                local screenGui = Instance.new("ScreenGui")
+                screenGui.Name = "KittyHub_AutoRecordGUI"
+                screenGui.ResetOnSpawn = false
+                screenGui.Parent = game:GetService("CoreGui")
+                recorderUIInstance = screenGui
+
+                local mainFrame = Instance.new("Frame")
+                mainFrame.Name = "MainFrame"
+                mainFrame.Size = UDim2.fromOffset(300, 220)
+                mainFrame.Position = UDim2.new(0.5, -150, 0.2, 0)
+                mainFrame.BackgroundColor3 = Color3.fromRGB(15, 7, 10)
+                mainFrame.BackgroundTransparency = 0.05
+                mainFrame.BorderSizePixel = 0
+                mainFrame.Active = true
+                mainFrame.Draggable = true
+                mainFrame.Parent = screenGui
+
+                local uiCorner = Instance.new("UICorner")
+                uiCorner.CornerRadius = UDim.new(0, 12)
+                uiCorner.Parent = mainFrame
+
+                local uiStroke = Instance.new("UIStroke")
+                uiStroke.Color = Color3.fromRGB(255, 105, 180)
+                uiStroke.Thickness = 2
+                uiStroke.Parent = mainFrame
+
+                local strokeGradient = Instance.new("UIGradient")
+                strokeGradient.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 105, 180)),
+                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 20, 147)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(218, 112, 214))
+                })
+                strokeGradient.Parent = uiStroke
+
+                local particleFolder = Instance.new("Folder")
+                particleFolder.Name = "Particles"
+                particleFolder.Parent = mainFrame
+
+                for i = 1, 8 do
+                    local pDot = Instance.new("Frame")
+                    pDot.Size = UDim2.fromOffset(4, 4)
+                    pDot.Position = UDim2.new(math.random(), 0, math.random(), 0)
+                    pDot.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+                    pDot.BackgroundTransparency = 0.5
+                    pDot.BorderSizePixel = 0
+                    pDot.Parent = particleFolder
+
+                    local dotCorner = Instance.new("UICorner")
+                    dotCorner.CornerRadius = UDim.new(1, 0)
+                    dotCorner.Parent = pDot
+                end
+
+                local titleLabel = Instance.new("TextLabel")
+                titleLabel.Size = UDim2.new(1, 0, 0, 40)
+                titleLabel.BackgroundTransparency = 1
+                titleLabel.Font = Enum.Font.GothamBold
+                titleLabel.Text = "Auto Record Panel"
+                titleLabel.TextColor3 = Color3.fromRGB(255, 240, 245)
+                titleLabel.TextSize = 16
+                titleLabel.Parent = mainFrame
+
+                local statusLabel = Instance.new("TextLabel")
+                statusLabel.Name = "StatusLabel"
+                statusLabel.Size = UDim2.new(1, 0, 0, 30)
+                statusLabel.Position = UDim2.new(0, 0, 0, 45)
+                statusLabel.BackgroundTransparency = 1
+                statusLabel.Font = Enum.Font.GothamMedium
+                statusLabel.Text = "Status: Idle"
+                statusLabel.TextColor3 = Color3.fromRGB(216, 112, 147)
+                statusLabel.TextSize = 14
+                statusLabel.Parent = mainFrame
+
+                local function createButton(name, text, posY, callback)
+                    local btn = Instance.new("TextButton")
+                    btn.Name = name
+                    btn.Size = UDim2.fromOffset(260, 35)
+                    btn.Position = UDim2.new(0.5, -130, 0, posY)
+                    btn.BackgroundColor3 = Color3.fromRGB(45, 20, 32)
+                    btn.Font = Enum.Font.GothamBold
+                    btn.Text = text
+                    btn.TextColor3 = Color3.fromRGB(255, 240, 245)
+                    btn.TextSize = 14
+                    btn.BorderSizePixel = 0
+                    btn.AutoButtonColor = false
+                    btn.Parent = mainFrame
+
+                    local corner = Instance.new("UICorner")
+                    corner.CornerRadius = UDim.new(0, 8)
+                    corner.Parent = btn
+
+                    local stroke = Instance.new("UIStroke")
+                    stroke.Color = Color3.fromRGB(255, 20, 147)
+                    stroke.Thickness = 1
+                    stroke.Parent = btn
+
+                    btn.MouseButton1Click:Connect(callback)
+                    return btn
+                end
+
+                createButton("RecordBtn", "Record", 85, function()
+                    if isPlaying then return end
+                    recordedFrames = {}
+                    isRecording = true
+                    updateRecorderUIState("Recording...", Color3.fromRGB(255, 105, 180))
+                    
+                    local startTime = tick()
+                    if recordConnection then recordConnection:Disconnect() end
+                    recordConnection = RunService.RenderStepped:Connect(function()
+                        if not isRecording then return end
+                        local char = LocalPlayer.Character
+                        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            table.insert(recordedFrames, {
+                                CFrame = hrp.CFrame,
+                                Time = tick() - startTime
+                            })
+                        end
+                    end)
+                end)
+
+                createButton("StopBtn", "Stop Record", 125, function()
+                    isRecording = false
+                    if recordConnection then
+                        recordConnection:Disconnect()
+                        recordConnection = nil
+                    end
+                    updateRecorderUIState("Stopped (" .. #recordedFrames .. " frames)", Color3.fromRGB(218, 112, 214))
+                end)
+
+                createButton("PlayBtn", "Play Record", 165, function()
+                    if isRecording or #recordedFrames == 0 then
+                        updateRecorderUIState("No data or recording!", Color3.fromRGB(255, 50, 50))
+                        return
+                    end
+                    isPlaying = true
+                    updateRecorderUIState("Playing...", Color3.fromRGB(50, 255, 50))
+
+                    task.spawn(function()
+                        local char = LocalPlayer.Character
+                        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+                        if hrp and humanoid then
+                            local oldPlatformStand = humanoid.PlatformStand
+                            humanoid.PlatformStand = true
+
+                            local playStartTime = tick()
+                            local index = 1
+                            local totalFrames = #recordedFrames
+                            
+                            if playbackConnection then playbackConnection:Disconnect() end
+                            playbackConnection = RunService.RenderStepped:Connect(function()
+                                if not isPlaying then return end
+                                local elapsedTime = tick() - playStartTime
+
+                                while index < totalFrames and recordedFrames[index + 1].Time <= elapsedTime do
+                                    index = index + 1
+                                end
+
+                                if index < totalFrames then
+                                    local currentFrame = recordedFrames[index]
+                                    local nextFrame = recordedFrames[index + 1]
+                                    
+                                    local alpha = 0
+                                    local timeDiff = nextFrame.Time - currentFrame.Time
+                                    if timeDiff > 0 then
+                                        alpha = math.clamp((elapsedTime - currentFrame.Time) / timeDiff, 0, 1)
+                                    end
+
+                                    hrp.CFrame = currentFrame.CFrame:Lerp(nextFrame.CFrame, alpha)
+                                    hrp.AssemblyLinearVelocity = Vector3.zero
+                                    hrp.AssemblyAngularVelocity = Vector3.zero
+                                else
+                                    if totalFrames > 0 then
+                                        hrp.CFrame = recordedFrames[totalFrames].CFrame
+                                    end
+                                    isPlaying = false
+                                    if playbackConnection then
+                                        playbackConnection:Disconnect()
+                                        playbackConnection = nil
+                                    end
+                                    humanoid.PlatformStand = oldPlatformStand
+                                    updateRecorderUIState("Playback Finished", Color3.fromRGB(255, 105, 180))
+                                end
+                            end)
+                        else
+                            isPlaying = false
+                            updateRecorderUIState("Character not found!", Color3.fromRGB(255, 50, 50))
+                        end
+                    end)
+                end)
+            else
+                recorderUIInstance.Enabled = true
+            end
+        else
+            if recorderUIInstance then
+                recorderUIInstance.Enabled = false
+            end
+        end
+    end
+})
+
+-- VISUAL TAB
+VisualTab:Section({ Title = "Visual ESP Settings" })
+
+local espColorSetting = Color3.fromRGB(255, 105, 180)
+local playerEspEnabled = false
+local bombEspEnabled = false
+local tracersEnabled = false
+local namesEnabled = false
+local boxEnabled = false
+local xrayEnabled = false
+
+local espDrawings = {}
+
+VisualTab:Dropdown({
+    Title = "ESP Theme Color",
+    Values = {"PinkFade", "Hot Pink", "Orchid", "Red", "Blue", "White", "Green"},
+    Default = "PinkFade",
+    Callback = function(Value)
+        espColorSetting = colorOptionsMap[Value] or Color3.fromRGB(255, 105, 180)
+    end
+})
+
+VisualTab:Toggle({
+    Title = "Player ESP",
+    Default = false,
+    Callback = function(State)
+        playerEspEnabled = State
+        if not State then
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p.Character then
+                    local hl = p.Character:FindFirstChild("KittyHub_ESP")
+                    if hl then hl:Destroy() end
+                end
+            end
+        end
+    end
+})
+
+VisualTab:Toggle({
+    Title = "Bomb ESP",
+    Desc = "Highlights bombs / gift tools across the game map",
+    Default = false,
+    Callback = function(State)
+        bombEspEnabled = State
+        if not State then
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                if obj:IsA("Highlight") and obj.Name == "KittyHub_BombESP" then
+                    obj:Destroy()
+                end
+            end
+        end
+    end
+})
+
+VisualTab:Toggle({
+    Title = "Tracers",
+    Default = false,
+    Callback = function(State)
+        tracersEnabled = State
+    end
+})
+
+VisualTab:Toggle({
+    Title = "Names ESP",
+    Default = false,
+    Callback = function(State)
+        namesEnabled = State
+    end
+})
+
+VisualTab:Toggle({
+    Title = "Box ESP",
+    Default = false,
+    Callback = function(State)
+        boxEnabled = State
+    end
+})
+
+VisualTab:Toggle({
+    Title = "X-Ray",
+    Desc = "Makes workspace parts semi-transparent to see through walls",
+    Default = false,
+    Callback = function(State)
+        xrayEnabled = State
+        for _, part in ipairs(Workspace:GetDescendants()) do
+            if part:IsA("BasePart") and not part.Parent:FindFirstChildOfClass("Humanoid") then
+                if xrayEnabled then
+                    if part.Transparency < 0.5 and not part:GetAttribute("OriginalTrans") then
+                        part:SetAttribute("OriginalTrans", part.Transparency)
+                        part.Transparency = 0.6
+                    end
+                else
+                    local orig = part:GetAttribute("OriginalTrans")
+                    if orig then
+                        part.Transparency = orig
+                        part:SetAttribute("OriginalTrans", nil)
+                    end
+                end
+            end
+        end
+    end
+})
+
+local function getPlayerDrawings(player)
+    if not espDrawings[player] then
+        local box = Drawing.new("Square")
+        box.Visible = false
+        box.Thickness = 1.5
+        box.Filled = false
+        
+        local tracer = Drawing.new("Line")
+        tracer.Visible = false
+        tracer.Thickness = 1.5
+
+        local name = Drawing.new("Text")
+        name.Visible = false
+        name.Size = 14
+        name.Center = true
+        name.Outline = true
+        name.Font = 2
+
+        espDrawings[player] = {Box = box, Tracer = tracer, Name = name}
+    end
+    return espDrawings[player]
+end
+
+Players.PlayerRemoving:Connect(function(player)
+    if espDrawings[player] then
+        pcall(function()
+            espDrawings[player].Box:Remove()
+            espDrawings[player].Tracer:Remove()
+            espDrawings[player].Name:Remove()
+        end)
+        espDrawings[player] = nil
+    end
+end)
+
+task.spawn(function()
+    RunService.RenderStepped:Connect(function()
+        if xrayEnabled then
+            for _, part in ipairs(Workspace:GetDescendants()) do
+                if part:IsA("BasePart") and not part.Parent:FindFirstChildOfClass("Humanoid") and part.Transparency < 0.5 and not part:GetAttribute("OriginalTrans") then
+                    part:SetAttribute("OriginalTrans", part.Transparency)
+                    part.Transparency = 0.6
+                end
+            end
+        end
+
+        for _, p in ipairs(Players:GetPlayers()) do
+            local drawings = getPlayerDrawings(p)
+            local shouldRender = false
+            
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChildOfClass("Humanoid") then
+                local char = p.Character
+                local hrp = char.HumanoidRootPart
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                
+                if humanoid.Health > 0 and not isTeammateCheck(p) then
+                    local vector, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+                    
+                    local highlight = char:FindFirstChild("KittyHub_ESP")
+                    if playerEspEnabled then
+                        if not highlight then
+                            highlight = Instance.new("Highlight")
+                            highlight.Name = "KittyHub_ESP"
+                            highlight.Adornee = char
+                            highlight.Parent = char
+                        end
+                        highlight.FillColor = espColorSetting
+                        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        highlight.Enabled = true
+                    else
+                        if highlight then highlight:Destroy() end
+                    end
+
+                    if onScreen then
+                        shouldRender = true
+                        local head = char:FindFirstChild("Head") or hrp
+                        local topVector = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 1, 0))
+                        local bottomVector = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
+                        
+                        local boxHeight = math.abs(topVector.Y - bottomVector.Y)
+                        local boxWidth = boxHeight / 2
+                        local boxPos = Vector2.new(vector.X - boxWidth / 2, topVector.Y)
+
+                        if boxEnabled then
+                            drawings.Box.Visible = true
+                            drawings.Box.Size = Vector2.new(boxWidth, boxHeight)
+                            drawings.Box.Position = boxPos
+                            drawings.Box.Color = espColorSetting
+                        else
+                            drawings.Box.Visible = false
+                        end
+
+                        if tracersEnabled then
+                            drawings.Tracer.Visible = true
+                            drawings.Tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                            drawings.Tracer.To = Vector2.new(vector.X, bottomVector.Y)
+                            drawings.Tracer.Color = espColorSetting
+                        else
+                            drawings.Tracer.Visible = false
+                        end
+
+                        if namesEnabled then
+                            drawings.Name.Visible = true
+                            drawings.Name.Text = p.Name
+                            drawings.Name.Position = Vector2.new(vector.X, topVector.Y - 18)
+                            drawings.Name.Color = espColorSetting
+                        else
+                            drawings.Name.Visible = false
+                        end
+                    end
+                end
+            end
+
+            if not shouldRender then
+                drawings.Box.Visible = false
+                drawings.Tracer.Visible = false
+                drawings.Name.Visible = false
+            end
+        end
+
+        if bombEspEnabled then
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                if obj:IsA("Tool") or (obj:IsA("BasePart") and (obj.Name:lower():find("bomb") or obj.Name:lower():find("gift"))) then
+                    local targetPart = obj:IsA("Tool") and obj:FindFirstChild("Handle") or obj
+                    if targetPart and targetPart:IsA("BasePart") then
+                        local bombHighlight = targetPart:FindFirstChild("KittyHub_BombESP")
+                        if not bombHighlight then
+                            bombHighlight = Instance.new("Highlight")
+                            bombHighlight.Name = "KittyHub_BombESP"
+                            bombHighlight.Adornee = targetPart
+                            bombHighlight.Parent = targetPart
+                        end
+                        bombHighlight.FillColor = Color3.fromRGB(255, 0, 0)
+                        bombHighlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        bombHighlight.Enabled = true
+                    end
+                end
+            end
+        end
+    end)
+end)
+
+-- MISCELLANEOUS TAB
+MiscTab:Section({ Title = "Avatar Customization" })
+
+local originalHeadData = {}
+local function applyHeadlessState(char, state)
+    local head = char:FindFirstChild("Head")
+    if not head then return end
+    
+    if not originalHeadData[head] then
+        local mesh = head:FindFirstChildOfClass("SpecialMesh")
+        originalHeadData[head] = {
+            Transparency = head.Transparency,
+            MeshId = mesh and mesh.MeshId or "",
+            TextureId = mesh and mesh.TextureId or "",
+            FaceTrans = head:FindFirstChild("face") and head:FindFirstChild("face").Transparency or 0
+        }
+    end
+    
+    if state then
+        head.Transparency = 1
+        local face = head:FindFirstChild("face")
+        if face then face.Transparency = 1 end
+        local mesh = head:FindFirstChildOfClass("SpecialMesh")
+        if mesh then
+            mesh.MeshId = "rbxassetid://1095708"
+            mesh.TextureId = ""
+        else
+            local newMesh = Instance.new("SpecialMesh")
+            newMesh.MeshId = "rbxassetid://1095708"
+            newMesh.Parent = head
+        end
+    else
+        local data = originalHeadData[head]
+        if data then
+            head.Transparency = data.Transparency
+            local face = head:FindFirstChild("face")
+            if face then face.Transparency = data.FaceTrans end
+            local mesh = head:FindFirstChildOfClass("SpecialMesh")
+            if mesh then
+                mesh.MeshId = data.MeshId
+                mesh.TextureId = data.TextureId
+            end
+        end
+    end
+end
+
+MiscTab:Toggle({
+    Title = "Client Headless",
+    Desc = "Removes head mesh and makes head completely transparent locally",
+    Default = false,
+    Callback = function(State)
+        if LocalPlayer.Character then
+            applyHeadlessState(LocalPlayer.Character, State)
+        end
+        
+        LocalPlayer.CharacterAdded:Connect(function(newChar)
+            newChar:WaitForChild("Head", 5)
+            if State then
+                task.wait(0.2)
+                applyHeadlessState(newChar, true)
+            end
+        end)
+    end
+})
+
+local originalLegData = {}
+local function applyKorbloxState(char, state)
+    local rightLeg = char:FindFirstChild("Right Leg")
+    if not rightLeg then return end
+    
+    if not originalLegData[rightLeg] then
+        local existingMesh = rightLeg:FindFirstChildOfClass("SpecialMesh")
+        originalLegData[rightLeg] = {
+            Transparency = rightLeg.Transparency,
+            HasMesh = existingMesh ~= nil,
+            MeshId = existingMesh and existingMesh.MeshId or "",
+            TextureId = existingMesh and existingMesh.TextureId or "",
+            Scale = existingMesh and existingMesh.Scale or Vector3.new(1,1,1)
+        }
+    end
+    
+    for _, child in ipairs(rightLeg:GetChildren()) do
+        if child:IsA("SpecialMesh") then child:Destroy() end
+    end
+    
+    if state then
+        rightLeg.Transparency = 0
+        local mesh = Instance.new("SpecialMesh")
+        mesh.MeshType = Enum.MeshType.FileMesh
+        mesh.MeshId = "rbxassetid://101851696"
+        mesh.TextureId = "rbxassetid://101851254"
+        mesh.Scale = Vector3.new(1, 1, 1)
+        mesh.Parent = rightLeg
+    else
+        local data = originalLegData[rightLeg]
+        if data and data.HasMesh then
+            rightLeg.Transparency = data.Transparency
+            local mesh = Instance.new("SpecialMesh")
+            mesh.MeshId = data.MeshId
+            mesh.TextureId = data.TextureId
+            mesh.Scale = data.Scale
+            mesh.Parent = rightLeg
+        else
+            rightLeg.Transparency = 0
+        end
+    end
+end
+
+MiscTab:Toggle({
+    Title = "Client Korblox",
+    Desc = "Applies working Korblox mesh to R6 right leg locally",
+    Default = false,
+    Callback = function(State)
+        if LocalPlayer.Character then
+            applyKorbloxState(LocalPlayer.Character, State)
+        end
+
+        LocalPlayer.CharacterAdded:Connect(function(newChar)
+            newChar:WaitForChild("Right Leg", 5)
+            if State then
+                task.wait(0.4)
+                applyKorbloxState(newChar, true)
+            end
+        end)
+    end
+})
+
+MiscTab:Section({ Title = "Client Customization & Effects" })
+
+local trailEnabled = false
+local currentTrailColor = Color3.fromRGB(255, 105, 180)
+local activeTrail = nil
+local rainbowTrailConnection = nil
+
+local colorPresets = {
+    ["PinkFade"] = Color3.fromRGB(255, 105, 180),
+    ["Hot Pink"] = Color3.fromRGB(255, 20, 147),
+    ["White"] = Color3.fromRGB(255, 255, 255),
+    ["Red"] = Color3.fromRGB(255, 0, 0),
+    ["Green"] = Color3.fromRGB(0, 255, 0),
+    ["Blue"] = Color3.fromRGB(0, 0, 255),
+    ["Yellow"] = Color3.fromRGB(255, 255, 0),
+    ["Cyan"] = Color3.fromRGB(0, 255, 255),
+    ["Magenta"] = Color3.fromRGB(255, 0, 255),
+    ["Orange"] = Color3.fromRGB(255, 128, 0),
+    ["Purple"] = Color3.fromRGB(128, 0, 255),
+    ["Lime"] = Color3.fromRGB(128, 255, 0),
+}
+
+local function applyTrailColor(col)
+    currentTrailColor = col
+    if activeTrail and not rainbowTrailConnection then
+        activeTrail.Color = ColorSequence.new(col)
+    end
+end
+
+local function toggleTrail(state)
+    trailEnabled = state
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    
+    if trailEnabled and hrp then
+        if not activeTrail then
+            local att0 = Instance.new("Attachment", hrp)
+            att0.Name = "TrailAtt0"
+            att0.Position = Vector3.new(0, -1, 0)
+            
+            local att1 = Instance.new("Attachment", hrp)
+            att1.Name = "TrailAtt1"
+            att1.Position = Vector3.new(0, 1, 0)
+            
+            activeTrail = Instance.new("Trail")
+            activeTrail.Name = "KittyHubTrail"
+            activeTrail.Attachment0 = att0
+            activeTrail.Attachment1 = att1
+            activeTrail.Color = ColorSequence.new(currentTrailColor)
+            activeTrail.Lifetime = 0.6
+            activeTrail.MinLength = 0.1
+            activeTrail.Parent = hrp
+        end
+    else
+        if activeTrail then
+            activeTrail:Destroy()
+            activeTrail = nil
+        end
+        if rainbowTrailConnection then
+            rainbowTrailConnection:Disconnect()
+            rainbowTrailConnection = nil
+        end
+        if hrp then
+            for _, att in ipairs(hrp:GetChildren()) do
+                if att.Name:find("TrailAtt") then att:Destroy() end
+            end
+        end
+    end
+end
+
+MiscTab:Toggle({
+    Title = "Enable Player Trail",
+    Default = false,
+    Callback = function(State)
+        toggleTrail(State)
+    end
+})
+
+MiscTab:Dropdown({
+    Title = "Trail Color Preset",
+    Values = {"PinkFade", "Hot Pink", "White", "Red", "Green", "Blue", "Yellow", "Cyan", "Magenta", "Orange", "Purple", "Lime"},
+    Default = "PinkFade",
+    Callback = function(Value)
+        if colorPresets[Value] then
+            if rainbowTrailConnection then
+                rainbowTrailConnection:Disconnect()
+                rainbowTrailConnection = nil
+            end
+            applyTrailColor(colorPresets[Value])
+        end
+    end
+})
+
+MiscTab:Toggle({
+    Title = "Rainbow Trail Mode",
+    Desc = "Cycles through vibrant shifting colors automatically",
+    Default = false,
+    Callback = function(State)
+        if State then
+            if rainbowTrailConnection then rainbowTrailConnection:Disconnect() end
+            rainbowTrailConnection = RunService.RenderStepped:Connect(function()
+                if activeTrail then
+                    local hue = (tick() % 5) / 5
+                    local rainbowCol = Color3.fromHSV(hue, 1, 1)
+                    activeTrail.Color = ColorSequence.new(rainbowCol)
+                end
+            end)
+        else
+            if rainbowTrailConnection then
+                rainbowTrailConnection:Disconnect()
+                rainbowTrailConnection = nil
+            end
+            applyTrailColor(currentTrailColor)
+        end
+    end
+})
+
+MiscTab:ColorPicker({
+    Title = "Custom Trail Color Picker",
+    Default = Color3.fromRGB(255, 105, 180),
+    Callback = function(Value)
+        if rainbowTrailConnection then
+            rainbowTrailConnection:Disconnect()
+            rainbowTrailConnection = nil
+        end
+        applyTrailColor(Value)
+    end
+})
+
+MiscTab:Section({ Title = "Utility Tools" })
+
+MiscTab:Button({
+    Title = "Rejoin Server",
+    Desc = "Instantly reconnects to the current place",
+    Callback = function()
+        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+    end
+})
+
+MiscTab:Button({
+    Title = "Server Hop",
+    Desc = "Finds and joins a different server instance",
+    Callback = function()
+        pcall(function()
+            local HttpService = game:GetService("HttpService")
+            local Servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
+            for _, server in ipairs(Servers.data) do
+                if server.id ~= game.JobId and server.playing < server.maxPlayers then
+                    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
+                    break
+                end
+            end
+        end)
+    end
+})
